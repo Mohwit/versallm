@@ -1,6 +1,6 @@
 from groq import Groq
 from .base import VersaLLM
-from ..memory import ConversationalMemory
+from ..utils.memory import ConversationalMemory
 
 
 class GroqClient(VersaLLM):

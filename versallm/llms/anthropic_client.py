@@ -1,6 +1,6 @@
 import anthropic
 from .base import VersaLLM
-from ..memory import ConversationalMemory
+from ..utils.memory import ConversationalMemory
 
 
 class AnthropicClient(VersaLLM):
@@ -40,4 +40,4 @@ class AnthropicClient(VersaLLM):
 
         self.memory.chat_history.append(assistant_message)
 
-        return response.content[0].text
+        return response

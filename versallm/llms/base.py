@@ -1,7 +1,7 @@
 from openai import OpenAI
 
 
-from ..memory import ConversationalMemory
+from ..utils.memory import ConversationalMemory
 
 
 class VersaLLM:
