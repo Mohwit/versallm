@@ -2,6 +2,7 @@ import inspect
 import json
 import logging
 from typing import Optional, List, Dict, Any
+from collections.abc import Generator
 
 import anthropic
 
@@ -79,6 +80,8 @@ class AnthropicClient(VersaLLM):
         self.system_prompt = message
 
     def _execute_functions(self, tool_use) -> Optional[Any]:
+        if self.functions is None:
+            return None
         for func in self.functions:
             if func.__name__ == tool_use.name:
                 sig = inspect.signature(func)
@@ -94,7 +97,7 @@ class AnthropicClient(VersaLLM):
 
     def completion(
             self, user_prompt: str, tools=None, tool_choice: ToolChoiceType= "auto", **kwargs: Any
-    ) -> Response:
+    ) -> Generator[Response, None, None]:
         if tools is None:
             tools = []
         client = anthropic.Anthropic()

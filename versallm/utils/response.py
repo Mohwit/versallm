@@ -16,7 +16,7 @@ class Usage:
 
 @dataclass
 class Response:
-    message: str
-    model: str
+    message: Optional[str]
+    model: Optional[str]
     tool_used: ToolUsed
     usage: Usage

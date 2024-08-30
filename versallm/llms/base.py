@@ -1,6 +1,7 @@
 import inspect
 import json
 from typing import Callable, Dict, List, Optional, Any
+from collections.abc import Generator
 
 from ..utils.memory import ConversationalMemory
 from ..utils.response import Response, Usage, ToolUsed
@@ -57,7 +58,7 @@ class VersaLLM:
         api_key: Optional[str] = None,
         temperature: float = 0,
         max_output_tokens: int = 1024,
-        functions: List[Callable] = None,
+        functions: Optional[List[Callable]] = None,
         **kwargs: Any,
     ) -> None:
         self.model = model
@@ -75,6 +76,8 @@ class VersaLLM:
 
     def _execute_functions(self, tool_use):
         # Ensure tool_use is structured correctly before access
+        if self.functions is None:
+            return None
         if isinstance(tool_use, list) and len(tool_use) > 0 and hasattr(tool_use[0], "function"):
             func_name = tool_use[0].function.name
             for func in self.functions:
@@ -96,7 +99,7 @@ class VersaLLM:
         tools: Optional[List[Dict[str, Any]]] = None,
         tool_choice: ToolChoiceType = "auto",
         **kwargs: Any,
-    ) -> Response:
+    ) -> Generator[Response, None, None]:
         client = self._get_client_instance()
         user_message = {"role": "user", "content": user_prompt}
         self.memory.chat_history.append(user_message)
