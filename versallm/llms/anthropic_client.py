@@ -7,6 +7,7 @@ import anthropic
 
 from ..utils.response import Response, ToolUsed, Usage
 from ..utils.memory import ConversationalMemory
+from ..utils.types import ToolChoiceType
 from .base import VersaLLM
 
 
@@ -29,6 +30,32 @@ def _tool_def_conversion(
         anthropic_tool_def.append(converted_function)
 
     return anthropic_tool_def
+
+
+def _convert_tool_choice(tool_choice: ToolChoiceType) -> Dict[str, Any]:
+    """
+    Converts the tool_choice variable to the required format.
+
+    - 'auto' -> {"type": "auto"}
+    - 'none' -> {"type": "auto"}
+    - 'required' -> {"type": "any"}
+    - {"type": "function", "function": {"name": "my_function"}} -> {"type": "tool", "name": "my_function"}
+
+    Args:
+    - tool_choice (ToolChoiceType): The original tool_choice variable.
+
+    Returns:
+    - Dict[str, Any]: The converted tool_choice in the new format.
+    """
+    if tool_choice in ['auto', 'none']:
+        return {"type": "auto"}
+    elif tool_choice == 'required':
+        return {"type": "any"}
+    elif isinstance(tool_choice, dict) and tool_choice.get("type") == "function":
+        function_name = tool_choice["function"].get("name")
+        return {"type": "tool", "name": function_name}
+    else:
+        raise ValueError("Invalid tool_choice value")
 
 
 class AnthropicClient(VersaLLM):
@@ -66,7 +93,7 @@ class AnthropicClient(VersaLLM):
         return None
 
     def completion(
-            self, user_prompt: str, tools=None, **kwargs: Any
+            self, user_prompt: str, tools=None, tool_choice: ToolChoiceType= "auto", **kwargs: Any
     ) -> Response:
         if tools is None:
             tools = []
@@ -87,6 +114,7 @@ class AnthropicClient(VersaLLM):
                 max_tokens=self.max_output_tokens,
                 messages=self.memory.chat_history,
                 tools=_tool_def_conversion(tools),
+                tool_choice=_convert_tool_choice(tool_choice),
             )
 
             if response.stop_reason == "tool_use":

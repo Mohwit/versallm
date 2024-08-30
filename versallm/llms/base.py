@@ -4,6 +4,7 @@ from typing import Callable, Dict, List, Optional, Any
 
 from ..utils.memory import ConversationalMemory
 from ..utils.response import Response, Usage, ToolUsed
+from ..utils.types import ToolChoiceType
 
 
 class VersaLLM:
@@ -93,6 +94,7 @@ class VersaLLM:
         self,
         user_prompt: str,
         tools: Optional[List[Dict[str, Any]]] = None,
+        tool_choice: ToolChoiceType = "auto",
         **kwargs: Any,
     ) -> Response:
         client = self._get_client_instance()
@@ -106,6 +108,7 @@ class VersaLLM:
                 max_tokens=self.max_output_tokens,
                 messages=self.memory.chat_history,
                 tools=tools,
+                tool_choice=tool_choice,
             )
 
             if response.choices[0].finish_reason == "tool_calls" and hasattr(response.choices[0].message, 'tool_calls'):
